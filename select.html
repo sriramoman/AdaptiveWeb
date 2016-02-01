@@ -1,0 +1,662 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Adaptive Web</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<!--   <link rel="stylesheet" href="/resources/demos/style.css"> -->
+  <script>
+  $(function() {
+    $( "#tabs" ).tabs({
+  		heightStyle: "fill"
+	});
+  });
+  </script>
+</head>
+<head>
+<style>
+#wrap{
+    width:90%;
+    float:center;
+    margin:0 auto;
+}
+.pieChart{
+    float:left;
+    width:48%;
+    margin:0 auto;
+}
+</style>
+
+<style>
+	html {
+		height: 100%;
+		color: #fff;
+		background: #222;
+		background-image: -webkit-gradient(radial,
+	                            50% 0, 10,
+	                            50% 0, 400,
+	                            from(rgba(255, 255, 255, 0.3)),
+	                            to(rgba(255, 255, 255, 0))
+								); /* Safari 5 */
+		-webkit-background-image: radial-gradient(
+								center top, 
+								circle, 
+								rgba(255, 255, 255, 0.3) 0%, 
+								rgba(255, 255, 255, 0) 50%
+								);
+								/* Chrome, WK Nightly */
+		background-image: -moz-radial-gradient(
+								center top, 
+								circle, 
+								rgba(255, 255, 255, 0.3) 0%, 
+								rgba(255, 255, 255, 0) 50%
+								);
+		/* Gradient not supported on Opera */
+	    background-repeat: no-repeat;
+	}
+	body {
+		font-family: 'Helvetica Neue', Helvetica, arial, sans-serif;
+		margin: 1em 1em 0;
+	}
+/* 
+	h1 {
+		text-shadow: rgba(255,255,255, .7) 0px 0px 10px;
+		font-size: 2em;
+	}
+ */
+	img.dock {
+		border: 0;
+	}
+	#dock-container {
+		position: fixed;
+		bottom: 0;
+		text-align: center;
+		width: 100%;
+		z-index:100;
+	}
+	#dock {
+		position: relative;
+		display: inline-block;
+		-webkit-perspective: 400;
+		-moz-perspective: 400;
+	}
+	#dock .base {
+		position: absolute;
+		bottom: 0;
+		width: 100%;
+		height: 45px;
+		z-index: -10;
+		background-color: #888;
+		background-image: -webkit-gradient(linear, left top, left bottom, from(#333), to(#ccc));
+		background-image: -webkit-linear-gradient(top, #333, #999); 
+		background-image: -moz-linear-gradient(top, #333, #999); /* Gradient works on FF 3.6+ */
+		opacity: .5;
+		border-bottom: 2px #aaa solid;
+		-webkit-transform-origin: 50% 100%;
+		-webkit-transform: rotateX(55deg); /* 3d - works on webkit only */
+		-moz-transform-origin: 50% 100%;
+		-moz-transform: rotateX(55deg); /* not supported on current 3.7 */
+		-o-transform-origin: 50% 100%;
+		-o-transform: rotateX(55deg); /* not supported on current 10.6 */
+	}
+	#dock ul {
+		font-size: 14px;
+		padding: 0 30px;
+		margin: 0;
+	}
+	#dock li {
+		list-style-type: none;
+		display: inline-block;
+		position: relative;		
+	}
+	#dock li span {
+		display: none;
+		position: absolute;
+		bottom: 140px;
+		left: 0;
+		width: 100%;
+		background-color: rgba(0,0,0,.75);
+		padding: 4px 0;
+		border-radius: 12px; /* webkit nightly */
+		-webkit-border-radius: 12px; /* for safari */
+		-moz-border-radius: 12px;
+	}
+	#dock li:hover span {
+		display: block;
+	}
+	#dock li img {
+		width: 64px;
+		height: 64px;
+		margin-bottom: 10px;
+		-webkit-box-reflect: below 2px
+		    -webkit-gradient(linear, left top, left bottom, from(transparent),
+		    color-stop(0.7, transparent), to(rgba(255,255,255,.5)));
+		-webkit-box-reflect: below 2px -webkit-linear-gradient(top, transparent, rgba(255,255,255,.3));
+		-webkit-transition: all 0.3s;
+		-webkit-transform-origin: 50% 100%;
+		-moz-transition: all 0.4s;
+		-moz-transform-origin: 50% 100%;
+		-o-transition: all 0.3s;
+		-o-transform-origin: 50% 100%;
+	}
+	#dock li:hover img { 
+		-webkit-transform: scale(2);
+		-moz-transform: scale(2);
+		-o-transform: scale(2);
+		margin: 0 2em 10px;
+	}
+
+	/* one element after and element before (with JS)*/
+	#dock li:hover + li img,
+	#dock li.prev img {
+		-webkit-transform: scale(1.4);
+		-moz-transform: scale(1.4);
+		-o-transform: scale(1.4);
+		margin: 0 1.4em 10px;
+	}
+
+	</style>
+<script>
+function getRandomColor() {
+// http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript
+    var letters = '012345'.split('');
+    var color = '#';        
+    color += letters[Math.round(Math.random() * 5)];
+    letters = '0123456789ABCDEF'.split('');
+    for (var i = 0; i < 5; i++) {
+        color += letters[Math.round(Math.random() * 15)];
+    }
+    return color;
+}
+
+</script>
+</head>
+<body>
+<div id="dock-container">
+	<div id="dock">
+	<ul>
+		<li><span>Clicks</span><a href="index.html"><img src="img/tap.png" class="dock"/></a></li>
+		<li><span>Operations</span><a href="operation.html"><img src="img/operation.png" class="dock"/></a></li>
+		<li><span>Queries</span><a href="query.html"><img src="img/query.png" class="dock"/></a></li>
+		<li><span>Text</span><img src="img/select.png" class="dock"/></li>
+	</ul>
+	<div class="base"></div>
+	</div>
+</div>
+
+<div id="tabs">
+  <ul>
+    <li><a href="#tabs-1">Text</a></li>
+    <li><a href="#tabs-2">URL</a></li>
+  </ul>
+  <span style="margin: 0px 0px 10px 0px;">Select user: <select id="selectUser" onchange="renderPie(this.value)">
+    <option value='loading'>Loading...</option>
+  </select></span>
+  <div id="tabs-1">
+<!--begin wrap--><div id="wrap">
+<div id="pieChart0" class="pieChart"></div>
+<div id="pieChart1" class="pieChart"></div>
+</div><!--end wrap-->
+  </div>
+  <div id="tabs-2">
+<!--begin wrap--><div id="wrap"><br/>
+<div id="pieChart2" class="pieChart"></div>
+<div id="pieChart3" class="pieChart"></div>
+</div><!--end wrap-->  </div>
+</div>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="d3pie.min.js"></script>
+<script>
+
+	var mapTargetGroupedByUId;
+	var mapTargetAllusers;
+	var mapURLGroupedByUId;
+	var mapURLAllusers;
+	var pieData1=[];
+	var pieData3=[];
+	function renderPie(u_id){
+	// 	console.log(mapTargetGroupedByUId[u_id]);
+		$(function() {
+			$( "#pieChart0" ).html('');
+			$( "#pieChart1" ).html('');
+			$( "#pieChart2" ).html('');
+			$( "#pieChart3" ).html('');
+		});
+		var pieData0=[];
+		for (var key in mapTargetGroupedByUId[u_id]) {
+			if (mapTargetGroupedByUId[u_id].hasOwnProperty(key)) {
+				var content = {};
+				content["label"]=key;
+				content["value"]=mapTargetGroupedByUId[u_id][key];
+				content["color"]=getRandomColor();
+				pieData0.push(content);
+			}
+		}
+// 		console.log(pieData1);
+	
+		var pie0 = new d3pie("pieChart0", {
+		"header": {
+			"title": {
+				"text": " ",
+				"fontSize": 22,
+				"font": "georgia"
+			},
+			"subtitle": {
+				"text": "Text that user "+u_id+" has asked",
+				"color": "#999999",
+				"fontSize": 22,
+				"font": "lucida sans"
+			},
+			"titleSubtitlePadding": 12
+		},
+		"footer": {
+			"text": "Source: class_select.csv",
+			"color": "#999999",
+			"fontSize": 11,
+			"font": "open sans",
+			"location": "bottom-center"
+		},
+		"size": {
+			"canvasHeight": 500,
+			"canvasWidth": 650,
+			"pieInnerRadius": "18%",
+			"pieOuterRadius": "88%"
+		},
+		"data": {
+			"smallSegmentGrouping": {
+				"enabled": true
+			},
+			"content": pieData0
+		},
+		"labels": {
+			"outer": {
+				"pieDistance": 32
+			},
+			"inner": {
+				"format": "value"
+			},
+			"mainLabel": {
+				"font": "verdana"
+			},
+			"percentage": {
+				"color": "#e1e1e1",
+				"font": "verdana",
+				"decimalPlaces": 0
+			},
+			"value": {
+				"color": "#e1e1e1",
+				"font": "verdana"
+			},
+			"lines": {
+				"enabled": true,
+				"color": "#cccccc"
+			},
+			"truncation": {
+				"enabled": true
+			}
+		},
+		"tooltips": {
+			"enabled": true,
+			"type": "placeholder",
+			"string": "{label}: {value}, {percentage}%"
+		},
+		"effects": {
+			"pullOutSegmentOnClick": {
+				"effect": "linear",
+				"speed": 400,
+				"size": 8
+			}
+		}
+	});
+		var pie1 = new d3pie("pieChart1", {
+		"header": {
+			"title": {
+				"text": " ",
+				"fontSize": 22,
+				"font": "georgia"
+			},
+			"subtitle": {
+				"text": "Text that other users have asked",
+				"color": "#999999",
+				"fontSize": 22,
+				"font": "lucida sans"
+			},
+			"titleSubtitlePadding": 12
+		},
+		"footer": {
+			"text": "Source: class_select.csv",
+			"color": "#999999",
+			"fontSize": 11,
+			"font": "open sans",
+			"location": "bottom-center"
+		},
+		"size": {
+			"canvasHeight": 500,
+			"canvasWidth": 650,
+			"pieInnerRadius": "18%",
+			"pieOuterRadius": "88%"
+		},
+		"data": {
+			"smallSegmentGrouping": {
+				"enabled": true
+			},
+			"content": pieData1
+		},
+		"labels": {
+			"outer": {
+				"pieDistance": 32
+			},
+			"inner": {
+				"format": "value"
+			},
+			"mainLabel": {
+				"font": "verdana"
+			},
+			"percentage": {
+				"color": "#e1e1e1",
+				"font": "verdana",
+				"decimalPlaces": 0
+			},
+			"value": {
+				"color": "#e1e1e1",
+				"font": "verdana"
+			},
+			"lines": {
+				"enabled": true,
+				"color": "#cccccc"
+			},
+			"truncation": {
+				"enabled": true
+			}
+		},
+		"tooltips": {
+			"enabled": true,
+			"type": "placeholder",
+			"string": "{label}: {value}, {percentage}%"
+		},
+		"effects": {
+			"pullOutSegmentOnClick": {
+				"effect": "linear",
+				"speed": 400,
+				"size": 8
+			}
+		}
+	});
+	
+		
+		var pieData2=[];
+		for (var key in mapURLGroupedByUId[u_id]) {
+			if (mapURLGroupedByUId[u_id].hasOwnProperty(key)) {
+				var content = {};
+				content["label"]=key;
+				content["value"]=mapURLGroupedByUId[u_id][key];
+				content["color"]=getRandomColor();
+				pieData2.push(content);
+			}
+		}
+		var pie2 = new d3pie("pieChart2", {
+		"header": {
+			"title": {
+				"text": " ",
+				"fontSize": 22,
+				"font": "georgia"
+			},
+			"subtitle": {
+				"text": "URLs that user "+u_id+" has hit",
+				"color": "#999999",
+				"fontSize": 22,
+				"font": "lucida sans"
+			},
+			"titleSubtitlePadding": 12
+		},
+		"footer": {
+			"text": "Source: class_select.csv",
+			"color": "#999999",
+			"fontSize": 11,
+			"font": "open sans",
+			"location": "bottom-center"
+		},
+		"size": {
+			"canvasHeight": 500,
+			"canvasWidth": 650,
+			"pieInnerRadius": "18%",
+			"pieOuterRadius": "88%"
+		},
+		"data": {
+			"smallSegmentGrouping": {
+				"enabled": true
+			},
+			"content": pieData2
+		},
+		"labels": {
+			"outer": {
+				"pieDistance": 32
+			},
+			"inner": {
+				"format": "value"
+			},
+			"mainLabel": {
+				"font": "verdana"
+			},
+			"percentage": {
+				"color": "#e1e1e1",
+				"font": "verdana",
+				"decimalPlaces": 0
+			},
+			"value": {
+				"color": "#e1e1e1",
+				"font": "verdana"
+			},
+			"lines": {
+				"enabled": true,
+				"color": "#cccccc"
+			},
+			"truncation": {
+				"enabled": true
+			}
+		},
+		"tooltips": {
+			"enabled": true,
+			"type": "placeholder",
+			"string": "{label}: {value}, {percentage}%"
+		},
+		"effects": {
+			"pullOutSegmentOnClick": {
+				"effect": "linear",
+				"speed": 400,
+				"size": 8
+			}
+		}
+	});
+		var pie3 = new d3pie("pieChart3", {
+		"header": {
+			"title": {
+				"text": " ",
+				"fontSize": 22,
+				"font": "georgia"
+			},
+			"subtitle": {
+				"text": "URLs that other users have hit",
+				"color": "#999999",
+				"fontSize": 22,
+				"font": "lucida sans"
+			},
+			"titleSubtitlePadding": 12
+		},
+		"footer": {
+			"text": "Source: class_select.csv",
+			"color": "#999999",
+			"fontSize": 11,
+			"font": "open sans",
+			"location": "bottom-center"
+		},
+		"size": {
+			"canvasHeight": 500,
+			"canvasWidth": 650,
+			"pieInnerRadius": "18%",
+			"pieOuterRadius": "88%"
+		},
+		"data": {
+			"smallSegmentGrouping": {
+				"enabled": true
+			},
+			"content": pieData3
+		},
+		"labels": {
+			"outer": {
+				"pieDistance": 32
+			},
+			"inner": {
+				"format": "value"
+			},
+			"mainLabel": {
+				"font": "verdana"
+			},
+			"percentage": {
+				"color": "#e1e1e1",
+				"font": "verdana",
+				"decimalPlaces": 0
+			},
+			"value": {
+				"color": "#e1e1e1",
+				"font": "verdana"
+			},
+			"lines": {
+				"enabled": true,
+				"color": "#cccccc"
+			},
+			"truncation": {
+				"enabled": true
+			}
+		},
+		"tooltips": {
+			"enabled": true,
+			"type": "placeholder",
+			"string": "{label}: {value}, {percentage}%"
+		},
+		"effects": {
+			"pullOutSegmentOnClick": {
+				"effect": "linear",
+				"speed": 400,
+				"size": 8
+			}
+		}
+	});
+	}
+
+	d3.csv("data/class_select.csv", function(error, data) {
+	
+		mapTargetGroupedByUId = d3.nest()
+		.key(function(d) { return d.u_id; }).sortKeys(d3.ascending)
+		.key(function(d) 
+					{ 
+// 						if(d.target.startsWith('http'))
+// 							return 'External URL';
+// 						return d.target.replace("[object HTML","HTML ").replace("Element]"," Element");
+						return d.text;
+					}).sortKeys(d3.ascending)
+		.rollup(function(operations) {
+			return operations.length; 
+		})
+		.map(data);
+		
+		
+		mapTargetAllusers = d3.nest()
+		.key(function(d) 
+					{ 
+// 						if(d.target.startsWith('http'))
+// 							return 'External URL';
+// 						return d.target.replace("[object HTML","HTML ").replace("Element]"," Element");
+						return d.text;
+					}).sortKeys(d3.ascending)
+		.rollup(function(operations) {
+			return operations.length; 
+		})
+		.map(data);
+		
+		for (var key in mapTargetAllusers) {
+			if (mapTargetAllusers.hasOwnProperty(key)) {
+				var content = {};
+				content["label"]=key;
+				content["value"]=mapTargetAllusers[key];
+				content["color"]=getRandomColor();
+				pieData1.push(content);
+			}
+		}
+		console.log(mapTargetAllusers);
+		
+		
+		
+		
+		
+		
+		
+		
+		mapURLGroupedByUId = d3.nest()
+		.key(function(d) { return d.u_id; }).sortKeys(d3.ascending)
+		.key(function(d) 
+					{ 
+						// if(d.target.startsWith('http'))
+// 							return 'External URL';
+// 						return d.target.replace("[object HTML","HTML ").replace("Element]"," Element");
+						return d.url;
+					}).sortKeys(d3.ascending)
+		.rollup(function(urls) {
+			return urls.length; 
+		})
+		.map(data);
+		
+		
+		mapURLAllusers = d3.nest()
+		.key(function(d) 
+					{ 
+						// if(d.target.startsWith('http'))
+// 							return 'External URL';
+// 						return d.target.replace("[object HTML","HTML ").replace("Element]"," Element");
+						return d.url;
+					}).sortKeys(d3.ascending)
+		.rollup(function(urls) {
+			return urls.length; 
+		})
+		.map(data);
+		
+		for (var key in mapURLAllusers) {
+			if (mapURLAllusers.hasOwnProperty(key)) {
+				var content = {};
+				content["label"]=key;
+				content["value"]=mapURLAllusers[key];
+				content["color"]=getRandomColor();
+				pieData3.push(content);
+			}
+		}
+		console.log(mapURLAllusers);
+		
+		
+		
+		
+		var select = document.getElementById("selectUser"); 
+		
+		$(function() {
+			$("#selectUser option[value='loading']").remove();
+		});
+		
+		var sorted_keys = Object.keys(mapTargetGroupedByUId).sort();
+		sorted_keys.forEach(function(entry){
+			var el = document.createElement("option");
+			el.textContent = entry;
+			el.value = entry;
+			select.appendChild(el);
+		});
+
+
+		renderPie(sorted_keys[0]);
+
+	});
+
+
+</script>
+
+</body>
+</html>
